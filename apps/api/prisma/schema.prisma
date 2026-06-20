@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String
+  role          String         @default("HR_VIEWER")
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  auditLogs     AuditLog[]
+  filterPresets FilterPreset[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model Employee {
+  id            String         @id @default(cuid())
+  employeeCode  String         @unique
+  firstName     String
+  lastName      String
+  email         String         @unique
+  department    String
+  jobTitle      String
+  country       String
+  status        String         @default("ACTIVE")
+  startDate     DateTime
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  salaryRecords SalaryRecord[]
+
+  @@index([lastName, firstName])
+  @@index([department])
+  @@index([country])
+  @@index([status])
+  @@map("employees")
+}
+
+model SalaryRecord {
+  id            String   @id @default(cuid())
+  employeeId    String
+  amount        Decimal
+  currencyCode  String
+  payFrequency  String
+  effectiveDate DateTime
+  createdAt     DateTime @default(now())
+  createdBy     String
+  employee      Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([employeeId, effectiveDate(sort: Desc)])
+  @@map("salary_records")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actorEmail String
+  action     String
+  entityType String
+  entityId   String
+  fieldName  String?
+  oldValue   String?
+  newValue   String?
+  timestamp  DateTime @default(now())
+  actor      User     @relation(fields: [actorId], references: [id])
+
+  @@index([timestamp])
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model FilterPreset {
+  id         String   @id @default(cuid())
+  userId     String
+  name       String
+  filterJson String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, name])
+  @@map("filter_presets")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
