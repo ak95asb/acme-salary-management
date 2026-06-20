@@ -56,7 +56,10 @@ export async function refresh(tokenFromCookie: string) {
     stored.user.role
   );
 
-  return { accessToken };
+  return {
+    accessToken,
+    user: { id: stored.user.id, email: stored.user.email, role: stored.user.role },
+  };
 }
 
 export async function logout(tokenFromCookie: string) {
