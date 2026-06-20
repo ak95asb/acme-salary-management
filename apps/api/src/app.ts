@@ -8,6 +8,8 @@ import userRouter from "./features/users/user.routes";
 import employeeRouter from "./features/employees/employee.routes";
 import salaryRouter from "./features/salaries/salary.routes";
 import settingsRouter from "./features/settings/settings.routes";
+import analyticsRouter from "./features/analytics/analytics.routes";
+import auditRouter from "./features/audit/audit.routes";
 import { errorMiddleware } from "./lib/errors";
 
 export function createApp(): Express {
@@ -28,6 +30,8 @@ export function createApp(): Express {
   app.use("/api/employees", employeeRouter);
   app.use("/api/employees/:employeeId/salaries", salaryRouter);
   app.use("/api/settings", settingsRouter);
+  app.use("/api/analytics", analyticsRouter);
+  app.use("/api/audit-logs", auditRouter);
 
   app.use((_req, res) => {
     res.status(404).json({
